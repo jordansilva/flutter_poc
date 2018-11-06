@@ -1,0 +1,1 @@
+CREATE TABLE feed(id INTEGER PRIMARY KEY, title TEXT, description TEXT, image TEXT);
