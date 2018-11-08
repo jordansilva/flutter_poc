@@ -1,4 +1,4 @@
-# trixie
+# Flutter POC
 
 A new Flutter application.
 
