@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trixie/domain/Feed.dart';
 import 'package:trixie/repository/FeedRepository.dart';
-import 'package:trixie/ui/feed/listItem.dart';
 import "package:pull_to_refresh/pull_to_refresh.dart";
 import "package:cached_network_image/cached_network_image.dart";
 
@@ -30,56 +29,63 @@ class FeedHome extends StatefulWidget {
 class _FeedHomeState extends State<FeedHome> {
   bool showButtons = true;
   bool isLoading = false;
+  List<Feed> feedItems = <Feed>[];
 
   @override
   Widget build(BuildContext context) {
-    return showButtons ? new Stack(
-      children: <Widget>[
-        _buttonsView(context),
-        Positioned(
-          child: isLoading
-              ? Container(
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                    ),
-                  ),
-                  color: Colors.white.withOpacity(0.8),
-                )
-              : Container(),
-        ),
-      ],
-    ) : new Container(child: FeedList());
+    return showButtons
+        ? new Stack(
+            children: <Widget>[
+              _buttonsView(context),
+              Positioned(
+                child: isLoading
+                    ? Container(
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.blue),
+                          ),
+                        ),
+                        color: Colors.white.withOpacity(0.8),
+                      )
+                    : Container(),
+              ),
+            ],
+          )
+        : new Container(child: FeedList(feedItems));
   }
 
   Widget _buttonsView(BuildContext context) {
     return Center(
-        child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        FlatButton(
-            child: const Text("INSERT ITEMS"),
-            color: Colors.blue,
-            textColor: Colors.white,
-            onPressed: () {
-              _insertItems(context);
-            }),
-        FlatButton(
-            child: const Text("INSERT BATCH ITEMS"),
-            color: Colors.blue,
-            textColor: Colors.white,
-            onPressed: () {
-              _insertBatchItems(context);
-            }),
-        FlatButton(
-            child: const Text("LIST ITEMS"),
-            color: Colors.blue,
-            textColor: Colors.white,
-            onPressed: () {
-              _listItems(context);
-            }),
-      ],
-    ));
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+          Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                FlatButton(
+                    child: const Text("INSERT ITEMS"),
+                    color: Colors.blue,
+                    textColor: Colors.white,
+                    onPressed: () {
+                      _insertItems(context);
+                    }),
+                FlatButton(
+                    child: const Text("INSERT BATCH ITEMS"),
+                    color: Colors.blue,
+                    textColor: Colors.white,
+                    onPressed: () {
+                      _insertBatchItems(context);
+                    }),
+              ]),
+          FlatButton(
+              child: const Text("LIST ITEMS"),
+              color: Colors.blue,
+              textColor: Colors.white,
+              onPressed: () {
+                _listItems(context);
+              })
+        ]));
   }
 
   void _insertBatchItems(BuildContext context) async {
@@ -128,23 +134,38 @@ class _FeedHomeState extends State<FeedHome> {
       isLoading = false;
     });
 
-    Scaffold.of(context).showSnackBar(SnackBar(
-      content: const Text("Items inserted!"),
-      backgroundColor: Colors.greenAccent,
-    ));
+    _showToast(context, "Items inserted!");
   }
 
   void _listItems(BuildContext context) async {
     setState(() {
-      showButtons = false;
+      isLoading = true;
+    });
+
+    _feedRepository.getAll().then((result) {
+      var noResult = result == null || result.isEmpty;
+
+      setState(() {
+        isLoading = false;
+        feedItems = result;
+        showButtons = noResult;
+      });
+
+      if (noResult) {
+        _showToast(context, "No items found!", color: Colors.redAccent);
+      }
     });
   }
 }
 
 class FeedList extends StatefulWidget {
 
+  List<Feed> feedItems;
+
+  FeedList(this.feedItems);
+
   @override
-  FeedListState createState() => new FeedListState();
+  FeedListState createState() => new FeedListState(this.feedItems);
 }
 
 class FeedListState extends State<FeedList> {
@@ -152,17 +173,11 @@ class FeedListState extends State<FeedList> {
 
   List<Feed> feedItems = <Feed>[];
 
-  @override
-  void initState() {
-    super.initState();
-    _feedRepository.getAll().then((result) {
-      setState(() { feedItems = result; });
-    });
-  }
+  FeedListState(this.feedItems);
 
   @override
   Widget build(BuildContext context) {
-    return SmartRefresher(
+    _smartRefresher = SmartRefresher(
         enablePullDown: true,
         enablePullUp: true,
         onRefresh: _onRefresh,
@@ -178,7 +193,7 @@ class FeedListState extends State<FeedList> {
                 return createCard(index, item.title, item.description, 2);
               }
             }));
-
+    return _smartRefresher;
   }
 
   void _onRefresh(bool up) {
@@ -233,11 +248,8 @@ class FeedListState extends State<FeedList> {
 
   void postComment(int id, String comment) {
     print(comment);
-    // FocusScope.of(context).requestFocus(new FocusNode());
-    // Scaffold.of(context).showSnackBar(SnackBar(
-    //   content: const Text("Sending comment"),
-    //   action: SnackBarAction(label: "UNDO", onPressed: () {}),
-    // ));
+    FocusScope.of(context).requestFocus(new FocusNode());
+    _showToast(context, "Sending comment", actionLabel: "UNDO", action: () {});
   }
 
   List<Widget> createType2(int index, String body, String sender) {
@@ -288,4 +300,18 @@ class FeedListState extends State<FeedList> {
   }
 
   void _onOffsetCallback(bool up, double offset) {}
+}
+
+void _showToast(BuildContext context, String message, {Color color = Colors.greenAccent, String actionLabel, Null Function() action}) {
+
+  SnackBarAction snackBarAction;
+  if (actionLabel != null && actionLabel.isNotEmpty && action != null) {
+    snackBarAction = SnackBarAction(label: actionLabel, onPressed: action);
+  }
+
+  Scaffold.of(context).showSnackBar(SnackBar(
+    content: Text(message),
+    backgroundColor: color,
+    action: snackBarAction,
+  ));
 }

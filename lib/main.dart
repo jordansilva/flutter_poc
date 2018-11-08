@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
-import 'package:trixie/ui/list.dart';
+import 'package:trixie/ui/feed/list.dart';
 import 'package:trixie/navigation/NavigationRoute.dart';
 
 void main() => runApp(MyApp());
@@ -39,11 +40,15 @@ class _WebViewState extends State<WebView> {
 
   @override
   Widget build(BuildContext context) {
-    return new WebviewScaffold(
-      url: _url,
-      appBar: AppBar(title: Text("First WebPage")),
-      bottomNavigationBar: bottomNavigation(context),
-    );
+    return new SafeArea(
+        top: false,
+        bottom: true,
+        child: new WebviewScaffold(
+            url: _url,
+            appBar: AppBar(title: Text("First WebPage")),
+            bottomNavigationBar: bottomNavigation(context)
+          )
+        );
   }
 
   @override
@@ -76,6 +81,9 @@ class _WebViewState extends State<WebView> {
 
     Future.delayed(Duration(milliseconds: 350), () => _flutterWebView.show());
   }
-}
 
-void openNativeScreen() {}
+  void openNativeScreen() {
+    MethodChannel webViewChannel = MethodChannel('samples.flutter.io/webview');
+    webViewChannel.invokeMethod("openWebView", "https://conferencecompass.com");
+  }
+}

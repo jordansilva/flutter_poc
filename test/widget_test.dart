@@ -8,7 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:trixie/main_native.dart';
+import 'package:trixie/ui/main_native.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {

@@ -7,8 +7,16 @@ import Flutter
                             didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         GeneratedPluginRegistrant.register(with: self)
         let controller : FlutterViewController = window?.rootViewController as! FlutterViewController;
-        let batteryChannel = FlutterMethodChannel.init(name: "samples.flutter.io/battery",
-                                                       binaryMessenger: controller);
+        let batteryChannel = FlutterMethodChannel.init(name: "samples.flutter.io/battery", binaryMessenger: controller);
+        let webViewChannel = FlutterMethodChannel.init(name: "samples.flutter.io/webview", binaryMessenger: controller);
+        
+        //let mainStoryBoard = UIStoryboard(name: "Main", bundle: nil);
+        //_ = mainStoryBoard.instantiateViewController(withIdentifier: "FlutterViewController");
+        
+//        self.window = UIWindow(frame: UIScreen.main.bounds)
+//        self.window?.rootViewController = initialViewController
+//        self.window?.makeKeyAndVisible()
+        
         batteryChannel.setMethodCallHandler({
             (call: FlutterMethodCall, result: FlutterResult) -> Void in
             if ("getBatteryLevel" == call.method) {
@@ -17,8 +25,19 @@ import Flutter
                 result(FlutterMethodNotImplemented);
             }
         });
-
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+        
+        webViewChannel.setMethodCallHandler({
+            (call: FlutterMethodCall, result: FlutterResult) -> Void in
+            switch call.method {
+                case "openWebView":
+                    
+                    break;
+                default:
+                    break;
+            }
+        })
+        
+        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
   
     private func receiveBatteryLevel(result: FlutterResult) {

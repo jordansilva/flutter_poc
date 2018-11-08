@@ -1,4 +1,4 @@
-package cc.conferences.trixie
+package cc.conferences.flutter
 
 import android.content.*
 import android.os.BatteryManager

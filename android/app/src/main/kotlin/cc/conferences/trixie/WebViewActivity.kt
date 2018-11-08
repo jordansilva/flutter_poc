@@ -1,4 +1,4 @@
-package cc.conferences.trixie
+package cc.conferences.flutter
 
 import android.graphics.Bitmap
 import android.os.Bundle
