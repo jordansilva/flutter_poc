@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:trixie/domain/Feed.dart';
 import 'package:trixie/repository/FeedRepository.dart';
 import "package:pull_to_refresh/pull_to_refresh.dart";
-import "package:cached_network_image/cached_network_image.dart";
 
 FeedRepository _feedRepository;
 
@@ -267,12 +266,7 @@ class FeedListState extends State<FeedList> {
     return Column(
       children: <Widget>[
         Stack(children: <Widget>[
-          new CachedNetworkImage(
-              imageUrl: url,
-              placeholder: CircularProgressIndicator(),
-              errorWidget: new Icon(Icons.error),
-              fadeOutDuration: new Duration(milliseconds: 300),
-              fadeInDuration: new Duration(milliseconds: 300)),
+          Image(image: NetworkImage(url)),
           Positioned(
               bottom: 2.0,
               left: 6.0,

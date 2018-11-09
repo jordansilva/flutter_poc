@@ -21,7 +21,6 @@ dependencies:
   # cupertino_icons: ^0.1.2
   flutter_webview_plugin: ^0.2.1+2
   pull_to_refresh: ^1.1.6
-  cached_network_image: ^0.5.0
   sqflite: any
 
 dev_dependencies:
